@@ -1,0 +1,4 @@
+ignore_files/
+dataset_aves/
+venv/
+*.mp3
