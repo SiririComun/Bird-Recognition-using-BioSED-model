@@ -1,93 +1,127 @@
-# Bioacoustic Sound Event Detection (BioSED)
+# BioSED: Bird Recognition Using Bioacoustic Sound Event Detection
 
-Este proyecto implementa un flujo completo de **Bioacoustic Sound Event Detection (BioSED)** para 10 especies de aves. El pipeline ya está centralizado en el notebook **[Bird_id_with_audio_pipeline.ipynb](Bird_id_with_audio_pipeline.ipynb)**, donde se realiza la extracción de datos desde Xeno-canto, el preprocesamiento de audio, el etiquetado temporal a nivel de frame y el entrenamiento de un modelo **CRNN** en PyTorch.
+Proyecto final de Fisica Computacional 2: Aprendizaje Estadistico.
 
-## Objetivo
-Entrenar un modelo capaz de predecir, para cada frame de un clip de audio, la probabilidad de presencia de cada una de las 10 especies. La evaluación se realiza con **Average Precision (AP)** por clase y **mean Average Precision (mAP)** global.
+El objetivo es construir un sistema capaz de detectar, a partir de audio, cual de las 10 especies de aves objetivo esta vocalizando y en que intervalo temporal ocurre el canto. El enfoque principal es Bioacoustic Sound Event Detection: el modelo predice probabilidades por frame temporal y por especie.
 
-## Notebook principal
-El flujo de trabajo está dividido en siete celdas principales dentro de [Bird_id_with_audio_pipeline.ipynb](Bird_id_with_audio_pipeline.ipynb):
-1. Configuración del entorno, semillas y dispositivos.
-2. Carga de audio y extracción de **Log-Mel Spectrograms**.
-3. `Dataset` personalizado, construcción de targets frame-level y `DataLoader`.
-4. Arquitectura **CRNN** con CNN 2D + BiGRU + salida multi-etiqueta.
-5. Entrenamiento con **BCE Loss** y optimizador **Adam**.
-6. Postprocesamiento de predicciones con umbral y reconstrucción de eventos temporales.
-7. Evaluación con **mAP** y visualización de predicciones.
+## Estado Del Proyecto
 
-## Estructura de carpetas
-La organización actual del proyecto es la siguiente, excluyendo la carpeta ignorada:
+El repositorio esta en proceso de refactorizacion hacia una estructura autocontenida en notebooks. La decision de diseno es mantener el proyecto como entrega academica reproducible, no como paquete de produccion.
+
+La version inicial del pipeline vive en:
 
 ```text
-Fis_comp_2/
-├── Bird_id_with_audio_pipeline.ipynb
-├── README.md
-├── requirements.txt
-├── best_model.pth
-├── artifacts/
-├── dataset_aves/
-│   ├── df_etiquetas_fuertes.csv
-│   ├── Campylorhynchus_griseus/
-│   ├── Crotophaga_ani/
-│   ├── Pitangus_sulphuratus/
-│   ├── Pygochelidon_cyanoleuca/
-│   ├── Thraupis_episcopus/
-│   ├── Thraupis_palmarum/
-│   ├── Troglodytes_aedon/
-│   ├── Turdus_ignobilis/
-│   ├── Tyrannus_melancholicus/
-│   └── Zonotrichia_capensis/
-└── venv/
+Bird_id_with_audio_pipeline.ipynb
 ```
 
+Ese notebook contiene descarga de datos, pseudo-etiquetado, preprocesamiento, entrenamiento, evaluacion e inferencia en un solo flujo. La refactorizacion separara esas responsabilidades en notebooks mas pequenos y autocontenidos.
+
+## Estructura Objetivo
+
+```text
+notebooks/
+|-- 01_dataset_y_etiquetado.ipynb
+|-- 02_EDA_dataset_y_mels.ipynb
+|-- 03_entrenamiento_CRNN_BioSED.ipynb
+|-- 04_evaluacion_modelo.ipynb
+`-- 05_dashboard_demo.ipynb
+
+artifacts/
+|-- biosed_crnn_checkpoint.pth
+|-- figures/
+|-- metrics/
+`-- splits/
+
+dataset_aves/
+|-- df_metadata_audios.csv
+|-- df_etiquetas_fuertes.csv
+`-- carpetas_por_especie/
+```
+
+## Flujo Esperado
+
+1. `01_dataset_y_etiquetado.ipynb`: descarga audios desde Xeno-canto, valida archivos y genera pseudo-etiquetas temporales con BirdNET.
+2. `02_EDA_dataset_y_mels.ipynb`: analiza el dataset, las etiquetas, las senales de audio y los espectrogramas Log-Mel.
+3. `03_entrenamiento_CRNN_BioSED.ipynb`: entrena el modelo CRNN de deteccion temporal.
+4. `04_evaluacion_modelo.ipynb`: evalua el checkpoint con mAP, AP por clase, curvas precision-recall, matriz de confusion y analisis de errores.
+5. `05_dashboard_demo.ipynb`: carga el checkpoint y permite probar el modelo con audios subidos o grabados durante la exposicion.
+
+Los notebooks deben ser autocontenidos: cada uno define sus imports, configuracion, funciones necesarias y verificaciones de entrada.
+
 ## Dataset
-El dataset está organizado en `dataset_aves/` y contiene 500 clips de audio, todos de 10 segundos, perfectamente balanceados entre 10 especies: 50 audios por especie.
 
-Las etiquetas fuertes están en `dataset_aves/df_etiquetas_fuertes.csv`, con columnas para:
-- archivo original
-- especie detectada
-- inicio y fin del evento en segundos
-- confianza de la anotación
+El dataset local esperado se almacena en `dataset_aves/`. Los audios crudos no se versionan porque pueden ser pesados y se pueden reconstruir o copiar localmente.
 
-## Arquitectura del modelo
-La red utilizada es una **CRNN** diseñada para bioacústica:
-- una **CNN 2D** extrae patrones locales del espectrograma,
-- el eje de frecuencia se comprime mediante pooling,
-- una **BiGRU** modela la evolución temporal,
-- una capa final con **sigmoid** genera probabilidades por frame y por especie.
+Los CSV pequenos de metadatos y pseudo-etiquetas si pueden versionarse:
 
-## Preprocesamiento de audio
-El notebook trabaja con los siguientes parámetros base:
-- sample rate: `32000 Hz`
-- `n_fft = 1024`
-- `hop_length = 512`
-- `n_mels = 64`
-- conversión a mono antes de extraer el espectrograma
+```text
+dataset_aves/df_metadata_audios.csv
+dataset_aves/df_etiquetas_fuertes.csv
+```
 
-## Dependencias
-Instala el entorno con:
+Esto permite reproducir analisis, splits y evaluaciones sin subir los archivos de audio al repositorio.
+
+Las etiquetas temporales se tratan como pseudo-etiquetas porque son generadas automaticamente con BirdNET. Esto debe tenerse en cuenta al interpretar las metricas: la evaluacion mide acuerdo con pseudo-ground-truth, no necesariamente con anotacion humana perfecta.
+
+## Politica De Versionamiento
+
+Se versiona:
+
+- notebooks finales del proyecto;
+- `README.md`, `requirements.txt`, `.gitignore` y archivos pequenos de configuracion;
+- CSVs pequenos de metadatos y pseudo-etiquetas;
+- checkpoint oficial si su tamano sigue siendo razonable;
+- metricas, splits y figuras finales si son utiles para reproducibilidad o presentacion.
+
+No se versiona:
+
+- audios crudos o derivados pesados;
+- entornos virtuales;
+- caches de Python/Jupyter;
+- notebooks temporales o de descarte;
+- archivos locales de planificacion.
+
+## Modelo
+
+El enfoque base usa una CRNN:
+
+```text
+audio -> Log-Mel Spectrogram -> CNN 2D -> BiGRU -> sigmoid por frame y clase
+```
+
+La salida esperada tiene forma:
+
+```text
+P(especie c activa en frame t | audio)
+```
+
+Por eso el problema se formula como clasificacion multi-label frame-level y se entrena con Binary Cross Entropy.
+
+## Instalacion
+
+Se recomienda crear un entorno virtual y luego instalar dependencias:
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-El archivo `requirements.txt` incluye las dependencias mínimas para ejecutar el notebook, entre ellas `torch`, `torchaudio`, `pandas`, `numpy`, `matplotlib` y `scikit-learn`.
+Para algunos formatos de audio puede ser necesario tener `ffmpeg` instalado en el sistema.
 
-## Uso
-1. Activa tu entorno virtual.
-2. Instala las dependencias.
-3. Abre [Bird_id_with_audio_pipeline.ipynb](Bird_id_with_audio_pipeline.ipynb).
-4. Ejecuta las celdas en orden para preparar datos, entrenar el modelo y evaluar resultados.
+## Artefactos
 
-## Salidas esperadas
-Al finalizar el entrenamiento, el notebook produce:
-- curvas de pérdida de entrenamiento y validación,
-- predicciones frame-level por especie,
-- métricas AP por clase,
-- valor final de mAP,
-- una visualización de ejemplo para inspección temporal.
+Los checkpoints actuales estan en `artifacts/`. Durante la refactorizacion se elegira un checkpoint oficial, idealmente:
 
-## Notas
-- El notebook está pensado para ejecutarse en CPU o GPU, según disponibilidad.
-- Los archivos `.mp3` del dataset se leen directamente desde `dataset_aves/`.
-- Si quieres cambiar la resolución temporal o la representación acústica, ajusta `sr`, `n_fft`, `hop_length` y `n_mels` dentro del notebook.
+```text
+artifacts/biosed_crnn_checkpoint.pth
+```
+
+Ese checkpoint debe incluir pesos, clases, configuracion de audio, seed y metadatos suficientes para inferencia y evaluacion.
+
+## Notas De Reproducibilidad
+
+- `dataset_aves/` puede contener CSVs pequenos versionados, pero no audios.
+- Los audios crudos no deben subirse al repositorio.
+- Los notebooks 03 y 04 deben poder ejecutarse si ya existen datos, splits y checkpoint.
+- El notebook 05 debe depender solo del checkpoint y del audio de entrada.

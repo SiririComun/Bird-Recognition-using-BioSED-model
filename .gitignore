@@ -1,3 +1,39 @@
+# Local planning notes
+PLAN_REFACTORIZACION.md
+GPT.md
+PlanGemini.md
+
+# Local/legacy scratch notebooks
+ignore_file/
+ignore_files/
+
+# Dataset and audio files
+dataset_aves/*
+!dataset_aves/.gitkeep
+!dataset_aves/README.md
+!dataset_aves/df_metadata_audios.csv
+!dataset_aves/df_etiquetas_fuertes.csv
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.m4a
+
+# Python environments and cache
+.venv/
+.venv*/
+venv/
+__pycache__/
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.venv_test/
+
 ignore_files/
 dataset_aves/
 venv/
