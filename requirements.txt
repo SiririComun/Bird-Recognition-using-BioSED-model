@@ -13,6 +13,7 @@ soundfile
 pydub
 torchaudio
 torchcodec
+resampy
 
 # Deep learning
 torch
