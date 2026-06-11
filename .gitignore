@@ -34,3 +34,8 @@ __pycache__/
 Thumbs.db
 .venv_test/
 
+ignore_files/
+dataset_aves/
+venv/
+*.mp3
+password.txt
