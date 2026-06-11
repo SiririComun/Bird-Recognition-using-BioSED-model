@@ -1,0 +1,22 @@
+{
+    "mAP_global": 0.6697799999999999,
+    "AP_por_especie": {
+        "Campylorhynchus griseus": 0.8783,
+        "Crotophaga ani": 0.8139,
+        "Pitangus sulphuratus": 0.7991,
+        "Pygochelidon cyanoleuca": 0.6074,
+        "Thraupis episcopus": 0.8588,
+        "Thraupis palmarum": 0.4575,
+        "Troglodytes aedon": 0.6175,
+        "Turdus ignobilis": 0.2095,
+        "Tyrannus melancholicus": 0.6814,
+        "Zonotrichia capensis": 0.7744
+    },
+    "config_audio_evaluado": {
+        "sr": 32000,
+        "hop_length": 512,
+        "n_mels": 64,
+        "conf_threshold_entrenamiento": 0.3,
+        "umbral_evaluacion_optimo": 0.1485858585858586
+    }
+}

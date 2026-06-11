@@ -39,3 +39,6 @@ dataset_aves/
 venv/
 *.mp3
 password.txt
+
+# Figures and plots
+artifacts/figures/
